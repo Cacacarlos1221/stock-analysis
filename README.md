@@ -32,6 +32,9 @@ python3 stock_monitor.py
 
 # 查看市场状态
 python3 stock_monitor.py --status
+
+# 收集收盘数据（手动执行）
+python3 data_collector.py
 ```
 
 ## 交易时间
@@ -79,6 +82,15 @@ python3 stock_monitor.py --status
 ### 市场环境
 - 所属板块、板块涨幅%
 - 大盘涨跌家数比、大盘成交额
+
+## 文件说明
+
+| 文件 | 说明 |
+|------|------|
+| `stock_monitor.py` | 实时行情监控工具 |
+| `data_collector.py` | 收盘数据收集工具（34字段） |
+| `fetch_history.py` | 历史数据抓取工具（需要 akshare） |
+| `daily_data.csv` | 每日收盘数据存储 |
 
 ## 数据来源
 
