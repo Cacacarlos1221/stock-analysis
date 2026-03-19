@@ -4,20 +4,19 @@
 使用 akshare 获取股票历史数据
 """
 
+import os
 import akshare as ak
 import pandas as pd
 from datetime import datetime, timedelta
-import os
 
-# 股票列表
-STOCKS = [
-    {"name": "完美世界", "code": "002624", "market": "sz"},
-    {"name": "北方稀土", "code": "600111", "market": "sh"},
-    {"name": "升达林业", "code": "002259", "market": "sz"},
-]
+# 导入工具模块获取统一股票列表
+from stock_utils import STOCKS
 
-# 数据文件路径
-DATA_FILE = os.path.expanduser("~/Desktop/Experiment/stock-analysis/daily_data.csv")
+# 获取脚本所在目录
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 数据文件路径（使用脚本相对路径）
+DATA_FILE = os.path.join(SCRIPT_DIR, "daily_data.csv")
 
 
 def fetch_stock_history(code: str, start_date: str, end_date: str):

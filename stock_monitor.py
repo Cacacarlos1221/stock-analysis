@@ -4,61 +4,13 @@
 使用腾讯股票 API 获取 A 股实时行情（更稳定）
 """
 
+import os
 import requests
 import re
 from datetime import datetime
 
-# 关注的股票列表
-WATCH_LIST = [
-    {"name": "完美世界", "code": "002624", "market": "sz"},
-    {"name": "北方稀土", "code": "600111", "market": "sh"},
-    {"name": "升达林业", "code": "002259", "market": "sz"},
-]
-
-def get_stock_realtime_tencent(code: str, market: str) -> dict:
-    """
-    使用腾讯 API 获取实时行情
-    """
-    try:
-        symbol = f"{market}{code}"
-        url = f"http://qt.gtimg.cn/q={symbol}"
-        
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-        
-        response = requests.get(url, headers=headers, timeout=10)
-        response.encoding = 'gbk'
-        
-        text = response.text
-        
-        # 解析返回数据
-        # 格式: v_sz002624="1~完美世界~002624~..."
-        match = re.search(r'="([^"]+)"', text)
-        if not match:
-            return None
-        
-        parts = match.group(1).split('~')
-        
-        if len(parts) < 35:
-            return None
-        
-        return {
-            "名称": parts[1],
-            "代码": parts[2],
-            "最新价": float(parts[3]) if parts[3] else 0,
-            "昨收": float(parts[4]) if parts[4] else 0,
-            "今开": float(parts[5]) if parts[5] else 0,
-            "成交量": int(float(parts[6])) if parts[6] else 0,
-            "成交额": float(parts[37]) if len(parts) > 37 and parts[37] else 0,
-            "涨跌额": float(parts[31]) if parts[31] else 0,
-            "涨跌幅": float(parts[32]) if parts[32] else 0,
-            "最高": float(parts[33]) if parts[33] else 0,
-            "最低": float(parts[34]) if parts[34] else 0,
-        }
-    except Exception as e:
-        print(f"  错误: {e}")
-        return None
+# 导入工具模块
+from stock_utils import STOCKS, get_stock_realtime
 
 
 def format_number(num):
@@ -123,9 +75,10 @@ def monitor_stocks():
     print(f"   市场状态: {status}")
     print("=" * 50)
     
-    for stock_info in WATCH_LIST:
+    for stock_info in STOCKS:
         print(f"\n🔍 查询: {stock_info['name']} ({stock_info['code']})")
-        data = get_stock_realtime_tencent(stock_info['code'], stock_info['market'])
+        symbol = f"{stock_info['market']}{stock_info['code']}"
+        data = get_stock_realtime(symbol)
         print_stock_info(data)
     
     print("\n" + "=" * 50)

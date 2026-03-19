@@ -4,22 +4,22 @@
 用于定时任务收集每日收盘数据
 """
 
-import requests
-import re
-import csv
 import os
-from datetime import datetime
+import csv
+from datetime import datetime, timedelta
 
-# 股票列表
-STOCKS = [
-    {"name": "完美世界", "code": "002624", "market": "sz"},
-    {"name": "北方稀土", "code": "600111", "market": "sh"},
-    {"name": "升达林业", "code": "002259", "market": "sz"},
-    {"name": "上证指数", "code": "000001", "market": "sh"},
-]
+# 导入工具模块
+from stock_utils import STOCKS, get_stock_realtime
+from fetch_history import (
+    calculate_ma, calculate_macd, calculate_kdj, calculate_rsi,
+    fetch_stock_history
+)
 
-# 数据文件路径
-DATA_FILE = os.path.expanduser("~/Desktop/Experiment/stock-analysis/daily_data.csv")
+# 获取脚本所在目录
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 数据文件路径（使用脚本相对路径）
+DATA_FILE = os.path.join(SCRIPT_DIR, "daily_data.csv")
 
 # CSV 表头
 CSV_HEADERS = [
@@ -31,53 +31,56 @@ CSV_HEADERS = [
 ]
 
 
-def get_stock_realtime(symbol: str):
+def calculate_technical_indicators(stock_code: str):
     """
-    使用腾讯 API 获取实时行情
+    计算技术指标
+    从历史数据中获取并计算 MA, MACD, KDJ, RSI
     """
     try:
-        url = f"http://qt.gtimg.cn/q={symbol}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
+        # 获取最近60个交易日的数据用于计算技术指标
+        end_date = datetime.now().strftime('%Y%m%d')
+        start_date = (datetime.now() - timedelta(days=120)).strftime('%Y%m%d')
         
-        response = requests.get(url, headers=headers, timeout=10)
-        response.encoding = 'gbk'
+        df = fetch_stock_history(stock_code, start_date, end_date)
+        if df is None or df.empty:
+            return {}
         
-        text = response.text
-        match = re.search(r'="([^"]+)"', text)
-        if not match:
-            return None
+        # 重命名列
+        df = df.rename(columns={
+            '日期': '日期',
+            '开盘': '今日开盘',
+            '收盘': '今日收盘',
+            '最高': '最高价',
+            '最低': '最低价',
+            '成交量': '成交量',
+            '成交额': '成交额',
+        })
         
-        parts = match.group(1).split('~')
+        # 计算技术指标
+        df = calculate_ma(df)
+        df = calculate_macd(df)
+        df = calculate_kdj(df)
+        df = calculate_rsi(df)
         
-        if len(parts) < 35:
-            return None
-        
-        return {
-            "名称": parts[1],
-            "代码": parts[2],
-            "最新价": float(parts[3]) if parts[3] else 0,
-            "昨收": float(parts[4]) if parts[4] else 0,
-            "今开": float(parts[5]) if parts[5] else 0,
-            "成交量": int(float(parts[6])) if parts[6] else 0,
-            "成交额": float(parts[37]) if len(parts) > 37 and parts[37] else 0,
-            "涨跌额": float(parts[31]) if parts[31] else 0,
-            "涨跌幅": float(parts[32]) if parts[32] else 0,
-            "最高": float(parts[33]) if parts[33] else 0,
-            "最低": float(parts[34]) if parts[34] else 0,
-            "委买": int(float(parts[7])) if parts[7] else 0,
-            "委卖": int(float(parts[8])) if parts[8] else 0,
-            "换手率": float(parts[38]) if len(parts) > 38 and parts[38] else 0,
-            "振幅": float(parts[43]) if len(parts) > 43 and parts[43] else 0,
-            "量比": float(parts[49]) if len(parts) > 49 and parts[49] else 0,
-            "市盈率": float(parts[52]) if len(parts) > 52 and parts[52] else 0,
-            "总市值": float(parts[44]) if len(parts) > 44 and parts[44] else 0,
-            "流通市值": float(parts[45]) if len(parts) > 45 and parts[45] else 0,
-        }
+        # 获取最新的技术指标值
+        if not df.empty:
+            latest = df.iloc[-1]
+            return {
+                'MA5': latest.get('MA5'),
+                'MA10': latest.get('MA10'),
+                'MA20': latest.get('MA20'),
+                'MACD': latest.get('MACD'),
+                'MACD信号': latest.get('MACD信号'),
+                'KDJ-K': latest.get('KDJ-K'),
+                'KDJ-D': latest.get('KDJ-D'),
+                'KDJ-J': latest.get('KDJ-J'),
+                'RSI6': latest.get('RSI6'),
+                'RSI12': latest.get('RSI12'),
+            }
     except Exception as e:
-        print(f"获取 {symbol} 数据失败: {e}")
-        return None
+        print(f"    计算技术指标失败: {e}")
+    
+    return {}
 
 
 def collect_daily_data():
@@ -95,6 +98,9 @@ def collect_daily_data():
         
         data = get_stock_realtime(symbol)
         if data:
+            # 获取技术指标
+            tech_indicators = calculate_technical_indicators(stock['code'])
+            
             row = {
                 '日期': today,
                 '股票代码': stock['code'],
@@ -115,17 +121,18 @@ def collect_daily_data():
                 '市盈率': data['市盈率'],
                 '总市值': data['总市值'],
                 '流通市值': data['流通市值'],
+                # 技术指标
+                'MA5': tech_indicators.get('MA5'),
+                'MA10': tech_indicators.get('MA10'),
+                'MA20': tech_indicators.get('MA20'),
+                'MACD': tech_indicators.get('MACD'),
+                'MACD信号': tech_indicators.get('MACD信号'),
+                'KDJ-K': tech_indicators.get('KDJ-K'),
+                'KDJ-D': tech_indicators.get('KDJ-D'),
+                'KDJ-J': tech_indicators.get('KDJ-J'),
+                'RSI6': tech_indicators.get('RSI6'),
+                'RSI12': tech_indicators.get('RSI12'),
                 # 以下字段需要计算或从其他接口获取
-                'MA5': None,
-                'MA10': None,
-                'MA20': None,
-                'MACD': None,
-                'MACD信号': None,
-                'KDJ-K': None,
-                'KDJ-D': None,
-                'KDJ-J': None,
-                'RSI6': None,
-                'RSI12': None,
                 '主力净流入': None,
                 '所属板块': None,
                 '板块涨幅%': None,
