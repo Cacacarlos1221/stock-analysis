@@ -1,0 +1,44 @@
+{
+  "benchmark_symbol": "000001",
+  "horizon": 1,
+  "technical": {
+    "moving_average_windows": [5, 10, 20, 60],
+    "macd": {
+      "fast": 12,
+      "slow": 26,
+      "signal": 9
+    },
+    "rsi_periods": [6, 12, 14],
+    "kdj": {
+      "lookback": 9,
+      "smooth_k": 3,
+      "smooth_d": 3
+    },
+    "bollinger": {
+      "window": 20,
+      "num_std": 2.0
+    },
+    "atr_period": 14
+  },
+  "seasonal": {
+    "enabled": true
+  },
+  "market": {
+    "enabled": true,
+    "regime_window": 20,
+    "bullish_threshold": 0.02,
+    "bearish_threshold": -0.02,
+    "volatility_threshold": 0.02
+  },
+  "excluded_model_columns": [
+    "trade_date",
+    "symbol",
+    "name",
+    "sector_name",
+    "target_return",
+    "target_up",
+    "close"
+  ],
+  "one_hot_columns": ["market_regime"],
+  "feature_columns": "auto"
+}
