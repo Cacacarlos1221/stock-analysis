@@ -16,7 +16,7 @@ from stock_utils import STOCKS
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 数据文件路径（使用脚本相对路径）
-DATA_FILE = os.path.join(SCRIPT_DIR, "daily_data.csv")
+DATA_FILE = os.path.join(SCRIPT_DIR, "data", "raw", "prices", "daily_data.csv")
 
 
 def fetch_stock_history(code: str, start_date: str, end_date: str):

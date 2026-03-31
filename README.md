@@ -56,7 +56,7 @@ python3 data_collector.py
 
 ## 数据收集
 
-每日收盘自动记录以下数据到 `daily_data.csv`：
+每日收盘自动记录以下数据到 `data/raw/prices/daily_data.csv`：
 
 ### 基础信息
 - 日期、股票代码、股票名称
@@ -90,7 +90,9 @@ python3 data_collector.py
 | `stock_monitor.py` | 实时行情监控工具 |
 | `data_collector.py` | 收盘数据收集工具（34字段） |
 | `fetch_history.py` | 历史数据抓取工具（需要 akshare） |
-| `daily_data.csv` | 每日收盘数据存储 |
+| `data/raw/prices/daily_data.csv` | 每日收盘数据存储 |
+| `data/raw/prices/stock_history.csv` | 历史价格与基础均线数据 |
+| `docs/data_column_mapping.md` | 原始字段到标准特征名映射 |
 
 ## 数据来源
 

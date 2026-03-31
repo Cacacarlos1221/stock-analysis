@@ -1,0 +1,1 @@
+2026-03-31T03:52:27.583965Z ERROR codex_api::endpoint::responses_websocket: failed to connect to websocket: IO error: Operation timed out (os error 60), url: wss://chatgpt.com/backend-api/codex/responses

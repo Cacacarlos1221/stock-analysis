@@ -1,0 +1,44 @@
+{
+  "task": "classification",
+  "model_family": "baseline",
+  "selection_metric": "f1",
+  "min_non_null_ratio": 0.6,
+  "random_state": 42,
+  "baseline": {
+    "logistic_regression": {
+      "max_iter": 1000,
+      "class_weight": "balanced",
+      "solver": "liblinear"
+    },
+    "linear_regression": {}
+  },
+  "tree": {
+    "random_forest_classifier": {
+      "n_estimators": 300,
+      "max_depth": 6,
+      "min_samples_leaf": 5,
+      "class_weight": "balanced_subsample"
+    },
+    "random_forest_regressor": {
+      "n_estimators": 300,
+      "max_depth": 6,
+      "min_samples_leaf": 5
+    },
+    "xgboost_classifier": {
+      "n_estimators": 300,
+      "max_depth": 4,
+      "learning_rate": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "eval_metric": "logloss"
+    },
+    "xgboost_regressor": {
+      "n_estimators": 300,
+      "max_depth": 4,
+      "learning_rate": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "objective": "reg:squarederror"
+    }
+  }
+}

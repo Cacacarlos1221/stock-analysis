@@ -21,7 +21,7 @@ STOCKS = [
 ]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(SCRIPT_DIR, "stock_history.csv")
+DATA_FILE = os.path.join(SCRIPT_DIR, "data", "raw", "prices", "stock_history.csv")
 
 # CSV 表头
 CSV_HEADERS = [
