@@ -19,7 +19,7 @@ from fetch_history import (
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 数据文件路径（使用脚本相对路径）
-DATA_FILE = os.path.join(SCRIPT_DIR, "daily_data.csv")
+DATA_FILE = os.path.join(SCRIPT_DIR, "data", "raw", "prices", "daily_data.csv")
 
 # CSV 表头
 CSV_HEADERS = [
