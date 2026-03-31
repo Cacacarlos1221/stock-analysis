@@ -6,27 +6,47 @@ from __future__ import annotations
 def _require_sklearn():
     try:
         from sklearn.linear_model import LinearRegression, LogisticRegression
+        from sklearn.pipeline import Pipeline
+        from sklearn.preprocessing import StandardScaler
     except ImportError as exc:
         raise ImportError(
             "scikit-learn is required for baseline models. Install dependencies from requirements.txt."
         ) from exc
-    return LinearRegression, LogisticRegression
+    return LinearRegression, LogisticRegression, Pipeline, StandardScaler
 
 
-def get_baseline_models(task_type: str) -> dict[str, object]:
+def get_baseline_models(task_type: str, overrides: dict[str, dict] | None = None) -> dict[str, object]:
     """Return baseline models for the requested task type."""
-    LinearRegression, LogisticRegression = _require_sklearn()
+    LinearRegression, LogisticRegression, Pipeline, StandardScaler = _require_sklearn()
+    overrides = overrides or {}
 
     if task_type == "regression":
         return {
-            "linear_regression": LinearRegression(),
+            "linear_regression": Pipeline(
+                [
+                    ("scaler", StandardScaler()),
+                    ("model", LinearRegression(**overrides.get("linear_regression", {}))),
+                ]
+            ),
         }
 
     if task_type == "classification":
         return {
-            "logistic_regression": LogisticRegression(
-                max_iter=1000,
-                class_weight="balanced",
+            "logistic_regression": Pipeline(
+                [
+                    ("scaler", StandardScaler()),
+                    (
+                        "model",
+                        LogisticRegression(
+                            **{
+                                "max_iter": 1000,
+                                "class_weight": "balanced",
+                                "solver": "liblinear",
+                                **overrides.get("logistic_regression", {}),
+                            }
+                        ),
+                    ),
+                ]
             ),
         }
 
